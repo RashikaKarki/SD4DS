@@ -1,11 +1,17 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader
 
-# Define the API key header
-api_key_header = APIKeyHeader(name="X-API-KEY")
+load_dotenv()
 
-# Define the API keys
-API_KEYS = ["your_api_key_here"]
+# Define the API key header
+api_key_header = APIKeyHeader(name="Authorization")
+
+# Define the API validate_api_keys
+API_KEYS = os.getenv('API_KEYS')
+
 
 # Define the API key validation function
 async def validate_api_keys(api_key: str = Depends(api_key_header)):

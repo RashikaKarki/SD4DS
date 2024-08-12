@@ -21,3 +21,4 @@ beautifulsoup4==4.10.0
 pip-audit
 bandit
 sqlalchemy
+python-dotenv

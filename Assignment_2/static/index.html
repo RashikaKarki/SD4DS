@@ -69,6 +69,8 @@
     </div>
 
     <script>
+        const apiKey = 'test-api';
+
         const bookForm = document.getElementById('book-form');
         const bookList = document.getElementById('book-list');
 
@@ -82,7 +84,8 @@
             const response = await fetch('/books', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `${apiKey}`
                 },
                 body: JSON.stringify({
                     title,
@@ -104,7 +107,11 @@
         });
 
         async function getBooks() {
-            const response = await fetch('/books');
+            const response = await fetch('/books', {
+                    headers: {
+                        'Authorization':  `${apiKey}`
+                    }}
+                );
             const books = await response.json();
 
             books.forEach((book) => {

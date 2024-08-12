@@ -61,14 +61,23 @@ def read_books(api_key: str = Depends(validate_api_keys)):
 @app.get("/books/{book_id}")
 def read_book(book_id: int, api_key: str = Depends(validate_api_keys)):
     session = Session()
-    # TODO 1: 
-    # 1. Query the database to get the book with the given ID
-    # 2. Return a JSONResponse with the book data
+    book = session.query(Book).get(book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    return JSONResponse(content={
+        "id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "publication_date": book.publication_date.strftime('%Y-%m-%d'),
+        "sales_data": book.sales_data
+    })
 
     
 @app.post("/books/")
 def create_book(book: BookModel, api_key: str = Depends(validate_api_keys)):
     session = Session()
+
     new_book = Book(
         title=book.title, 
         author=book.author, 
@@ -77,26 +86,51 @@ def create_book(book: BookModel, api_key: str = Depends(validate_api_keys)):
     )
     session.add(new_book)
     session.commit()
-    # TODO 2: 
-    # 1. Return a JSONResponse with the new book data
-    # 2. Include the ID of the new book in the response
-
+    session.refresh(new_book)
+    
+    return JSONResponse(content={
+        "id": new_book.id,
+        "title": new_book.title,
+        "author": new_book.author,
+        "publication_date": new_book.publication_date.strftime('%Y-%m-%d'),
+        "sales_data": new_book.sales_data
+    }, status_code=201)
 
 @app.put("/books/{book_id}")
 def update_book(book_id: int, book: BookModel, api_key: str = Depends(validate_api_keys)):
     session = Session()
-    # TODO 3:
-    # 1. Query the database to get the book with the given ID
-    # 2. Update the book data with the new data
-    # 3. Commit the changes
-    # 4. Return a JSONResponse with the updated book data
-
+    
+    existing_book = session.query(Book).get(book_id)
+    
+    if existing_book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    existing_book.title = book.title
+    existing_book.author = book.author
+    existing_book.publication_date = datetime.strptime(book.publication_date, '%Y-%m-%d')
+    existing_book.sales_data = book.sales_data
+    
+    session.commit()
+    
+    return JSONResponse(content={
+        "id": existing_book.id,
+        "title": existing_book.title,
+        "author": existing_book.author,
+        "publication_date": existing_book.publication_date.strftime('%Y-%m-%d'),
+        "sales_data": existing_book.sales_data
+    })
+    
 
 @app.delete("/books/{book_id}")
 def delete_book(book_id: int, api_key: str = Depends(validate_api_keys)):
     session = Session()
-    # TODO 4:
-    # 1. Query the database to get the book with the given ID
-    # 2. Delete the book
-    # 3. Commit the changes
-    # 4. Return a JSONResponse with a message indicating success
+    
+    existing_book = session.query(Book).get(book_id)
+    
+    if existing_book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    session.delete(existing_book)
+    session.commit()
+
+    return JSONResponse(content={"message": "Book deleted successfully"}, status_code=200)
